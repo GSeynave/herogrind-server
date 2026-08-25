@@ -12,10 +12,10 @@ public class GetHeroesUseCase {
 
     private final HeroRepository heroRepository;
 
-    public List<HeroView> execute(){
+    public List<HeroDetailsView> execute(){
         // later potential Query carrying user informatioon for filter context..
 
         var heroes =  heroRepository.findAll();
-        return heroes.stream().map(HeroView::from).toList();
+        return heroes.stream().map(HeroDetailsView::from).toList();
     }
 }

@@ -1,6 +1,5 @@
 package com.shock.herogrind.hero.internal.application.create;
 
-import com.shock.herogrind.hero.internal.application.get.HeroView;
 import com.shock.herogrind.hero.internal.domain.Hero;
 import com.shock.herogrind.hero.internal.domain.HeroRepository;
 import com.shock.herogrind.hero.internal.domain.HeroRole;
