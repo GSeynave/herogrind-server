@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Data
 @AllArgsConstructor
-public class HeroView {
+public class HeroDetailsView {
 
     private UUID id;
     private String name;
@@ -19,9 +19,9 @@ public class HeroView {
     private Double attack;
     private Double defense;
 
-    public static HeroView from(Hero domain) {
+    public static HeroDetailsView from(Hero domain) {
 
-        return new HeroView(
+        return new HeroDetailsView(
                 domain.getId(), domain.getName(), domain.getRole(), domain.getLevel(), domain.getHealth(),
                 domain.getAttack(), domain.getDefense());
     }

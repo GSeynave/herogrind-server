@@ -11,10 +11,10 @@ public class GetHeroUseCase {
 
     private final HeroRepository heroRepository;
 
-    public HeroView execute(GetHeroQuery query) {
+    public HeroDetailsView execute(GetHeroQuery query) {
         var hero = heroRepository.findById(query.heroId()).orElseThrow(
                 () -> new HeroNotFoundException(query.heroId())
         );
-        return HeroView.from(hero);
+        return HeroDetailsView.from(hero);
     }
 }

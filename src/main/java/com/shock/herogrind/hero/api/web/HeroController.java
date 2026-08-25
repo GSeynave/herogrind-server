@@ -1,8 +1,8 @@
 package com.shock.herogrind.hero.api.web;
 
-import com.shock.herogrind.hero.api.dto.HeroDto;
-import com.shock.herogrind.hero.api.dto.HeroUnlockedDTO;
-import com.shock.herogrind.hero.api.dto.UnlockHeroDTO;
+import com.shock.herogrind.hero.api.web.dto.HeroDetailsDto;
+import com.shock.herogrind.hero.api.web.dto.HeroUnlockedDTO;
+import com.shock.herogrind.hero.api.web.dto.UnlockHeroDTO;
 import com.shock.herogrind.hero.internal.application.create.UnlockHeroCommand;
 import com.shock.herogrind.hero.internal.application.create.UnlockHeroUseCase;
 import com.shock.herogrind.hero.internal.application.get.GetHeroQuery;
@@ -31,15 +31,15 @@ public class HeroController {
         return ResponseEntity.status(HttpStatus.CREATED).body(HeroUnlockedDTO.from(result));
     }
     @GetMapping
-    ResponseEntity<List<HeroDto>> getHeroes() {
+    ResponseEntity<List<HeroDetailsDto>> getHeroes() {
         var heroes = getHeroesUseCase.execute();
-        return ResponseEntity.ok().body(heroes.stream().map(HeroDto::from).toList());
+        return ResponseEntity.ok().body(heroes.stream().map(HeroDetailsDto::from).toList());
     }
     @GetMapping("/{id}")
-    ResponseEntity<HeroDto> getHero(@PathVariable UUID id) {
+    ResponseEntity<HeroDetailsDto> getHero(@PathVariable UUID id) {
 
         var query = new GetHeroQuery(id);
         var hero = getHeroUseCase.execute(query);
-        return ResponseEntity.ok(HeroDto.from(hero));
+        return ResponseEntity.ok(HeroDetailsDto.from(hero));
     }
 }
