@@ -16,4 +16,5 @@ public class HeroPartyInfo {
     private HeroRole role;
     private Integer level;
 
+
 }

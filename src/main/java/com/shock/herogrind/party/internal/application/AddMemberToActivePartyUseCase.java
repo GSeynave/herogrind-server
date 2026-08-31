@@ -20,6 +20,12 @@ public class AddMemberToActivePartyUseCase {
     public PartyView execute(AddMemberToActivePartyCommand command) {
         var hero = heroFacade.getHeroById(command.memberId());
 
+        var currentPartyAssigned = partyRepository.findByHeroId(hero.getId());
+        if (currentPartyAssigned.isPresent()){
+            currentPartyAssigned.get().removeMember(hero.getId());
+            if (currentPartyAssigned.get().isEmpty()) partyRepository.delete(currentPartyAssigned.get().getId());
+            else partyRepository.save(currentPartyAssigned.get());
+        }
         var partyOptional = partyRepository.findActive();
 
         var party = partyOptional.orElseGet(Party::active);

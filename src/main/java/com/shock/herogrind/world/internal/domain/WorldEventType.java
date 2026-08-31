@@ -1,0 +1,9 @@
+package com.shock.herogrind.world.internal.domain;
+
+public enum WorldEventType {
+    HERO_IDLE,
+    HERO_ENTERED_DUNGEON,
+    HERO_STARTED_ROAMING,
+    HERO_STARTED_ENCOUNTER,
+    HERO_FINISHED_ENCOUNTER,
+}

@@ -12,6 +12,7 @@ public class Area {
     private UUID id;
     private String name;
     private Boolean unlocked;
+    private AreaState state;
 
     public Boolean isUnlocked(){
         return this.unlocked;

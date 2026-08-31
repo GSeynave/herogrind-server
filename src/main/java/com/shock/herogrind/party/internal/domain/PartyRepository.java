@@ -11,4 +11,5 @@ public interface PartyRepository {
     Optional<Party> findActive();
     void save(Party party);
     void delete(UUID id);
+    Optional<Party> findByHeroId(UUID heroId);
 }

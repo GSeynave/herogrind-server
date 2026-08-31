@@ -27,6 +27,14 @@ public class AddMemberToAreaPartyUseCase {
         if (Boolean.FALSE.equals(area.isUnlocked())) {
             throw new AreaLockedException(area.id());
         }
+
+        var currentPartyAssigned = partyRepository.findByHeroId(hero.getId());
+        if (currentPartyAssigned.isPresent()){
+            currentPartyAssigned.get().removeMember(hero.getId());
+            if (currentPartyAssigned.get().isEmpty()) partyRepository.delete(currentPartyAssigned.get().getId());
+            else partyRepository.save(currentPartyAssigned.get());
+        }
+
         var partyOptional = partyRepository.findByAreaId(area.id());
 
         var party = partyOptional.orElseGet(() -> Party.forArea(area.id()));

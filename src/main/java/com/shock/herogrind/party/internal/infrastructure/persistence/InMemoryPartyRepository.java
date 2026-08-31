@@ -46,4 +46,14 @@ public class InMemoryPartyRepository implements PartyRepository {
         });
         parties.remove(keyToDelete.get());
     }
+
+    @Override
+    public Optional<Party> findByHeroId(UUID heroId) {
+        AtomicReference<Party> party = new AtomicReference<>();
+        parties.forEach((k, v) -> {
+                    if (v.getMembers().contains(heroId)) party.set(v);
+                }
+        );
+        return Optional.ofNullable(party.get());
+    }
 }
