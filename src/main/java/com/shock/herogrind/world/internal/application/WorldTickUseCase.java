@@ -91,9 +91,8 @@ public class WorldTickUseCase {
 
     private HeroActivity resolveAreaActivity(HeroActivity current, UUID areaId) {
         return switch (current.state()) {
-            case IDLE, RESTING, DUNGEON -> HeroActivity.roaming(current.heroId(), areaId);
-            case ROAMING -> HeroActivity.inEncounter(current.heroId(), current.areaId());
-            case IN_ENCOUNTER -> HeroActivity.roaming(current.heroId(), current.areaId());
+            case IDLE, RESTING, DUNGEON, IN_ENCOUNTER -> HeroActivity.roaming(current.heroId(), areaId);
+            case ROAMING -> HeroActivity.inEncounter(current.heroId(), areaId);
         };
     }
 }
