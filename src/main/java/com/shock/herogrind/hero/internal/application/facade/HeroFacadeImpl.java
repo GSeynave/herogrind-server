@@ -1,6 +1,7 @@
 package com.shock.herogrind.hero.internal.application.facade;
 
 import com.shock.herogrind.hero.api.HeroFacade;
+import com.shock.herogrind.hero.api.HeroInfo;
 import com.shock.herogrind.hero.api.HeroPartyInfo;
 import com.shock.herogrind.hero.internal.application.get.GetHeroQuery;
 import com.shock.herogrind.hero.internal.application.get.GetHeroUseCase;
@@ -38,5 +39,11 @@ public class HeroFacadeImpl implements HeroFacade {
                         )
                 )
                 .toList();
+    }
+
+    @Override
+    public HeroInfo getHeroInfoById(UUID heroId) {
+        var query = new GetHeroQuery(heroId);
+        return HeroInfo.from(getHeroUseCase.execute(query));
     }
 }
