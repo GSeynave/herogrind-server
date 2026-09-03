@@ -76,7 +76,8 @@ public record Encounter(
                 CombatActionType.ATTACK,
                 heroId,
                 enemyId,
-                damage
+                damage,
+                newEnemyHealth
         );
         return new CombatStepResult(updatedEncounter, action);
     }
@@ -100,7 +101,8 @@ public record Encounter(
                 CombatActionType.ATTACK,
                 enemyId,
                 heroId,
-                damage
+                damage,
+                newHeroHealth
         );
         return new CombatStepResult(updatedEncounter, action);
     }

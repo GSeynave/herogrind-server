@@ -1,15 +1,18 @@
 package com.shock.herogrind.world.internal.domain;
 
-import java.util.UUID;
+import com.shock.herogrind.combat.api.CombatActionInfo;
 
 public record WorldEvent(
-        WorldEventType type,
-        UUID heroId,
-        UUID areaId,
+        WorldEventType eventType,
+        WorldEventPayload payload,
         Long occurredAt
-        ) {
+) {
     public static WorldEvent from(HeroActivity activity) {
-        return new WorldEvent(getType(activity.state()), activity.heroId(), activity.areaId(), System.currentTimeMillis());
+        return new WorldEvent(getType(activity.state()), new HeroActivityEvent(activity.heroId(), activity.areaId()), System.currentTimeMillis());
+    }
+
+    public static WorldEvent from(CombatActionInfo action) {
+        return new WorldEvent(WorldEventType.COMBAT_ACTION, new CombatActionEvent(action.sourceId(), action.targetId(), action.targetHealth(), action.type(), action.value()), System.currentTimeMillis());
     }
 
     private static WorldEventType getType(HeroActivityState state) {

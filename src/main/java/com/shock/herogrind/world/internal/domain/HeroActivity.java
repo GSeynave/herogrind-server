@@ -34,12 +34,12 @@ public record HeroActivity(
                 now.plus(3, ChronoUnit.SECONDS).toEpochMilli()
         );
     }
-    public static HeroActivity inEncounter(UUID heroId, UUID areaId){
+    public static HeroActivity inEncounter(UUID heroId, UUID areaId, UUID encounterId){
         var now = Instant.now();
         return new HeroActivity(heroId,
                 areaId,
                 HeroActivityState.IN_ENCOUNTER,
-                UUID.randomUUID(),
+                encounterId,
                 now.toEpochMilli(),
                 now.plus(3, ChronoUnit.SECONDS).toEpochMilli()
         );

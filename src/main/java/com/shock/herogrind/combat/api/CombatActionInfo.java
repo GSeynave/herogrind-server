@@ -8,7 +8,8 @@ public record CombatActionInfo(
         CombatActionTypeInfo type,
         UUID sourceId,
         UUID targetId,
-        Double value
+        double targetHealth,
+        double value
 ) {
 
     public static CombatActionInfo from(CombatAction action) {
@@ -16,6 +17,7 @@ public record CombatActionInfo(
                 CombatActionTypeInfo.valueOf(action.type().name()),
                 action.sourceId(),
                 action.targetId(),
+                action.targetHealth(),
                 action.value()
         );
     }

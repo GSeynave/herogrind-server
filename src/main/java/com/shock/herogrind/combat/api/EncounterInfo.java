@@ -14,4 +14,8 @@ public record EncounterInfo(
         Long nextResolutionAt
 ) {
 
+    public boolean isReadyForResolution(){
+        return nextResolutionAt != null && System.currentTimeMillis() >= nextResolutionAt;
+
+    }
 }

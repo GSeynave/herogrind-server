@@ -8,7 +8,8 @@ public record CombatAction(
         CombatActionType type,
         UUID sourceId,
         UUID targetId,
-        Double value
+        Double value,
+        Double targetHealth
 ) {
 
     CombatActionInfo toInfo() {

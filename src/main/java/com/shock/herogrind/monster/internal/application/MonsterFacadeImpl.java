@@ -2,9 +2,11 @@ package com.shock.herogrind.monster.internal.application;
 
 import com.shock.herogrind.monster.api.MonsterFacade;
 import com.shock.herogrind.monster.api.MonsterInfo;
+import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+@Component
 public class MonsterFacadeImpl implements MonsterFacade {
 
     @Override

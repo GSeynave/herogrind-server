@@ -1,11 +1,14 @@
 package com.shock.herogrind.world.internal.application;
 
 import com.shock.herogrind.area.api.AreaFacade;
+import com.shock.herogrind.combat.api.CombatFacade;
+import com.shock.herogrind.combat.api.EncounterStatusInfo;
 import com.shock.herogrind.hero.api.HeroFacade;
 import com.shock.herogrind.party.api.PartyFacade;
 import com.shock.herogrind.party.api.PartyInfo;
 import com.shock.herogrind.world.internal.domain.HeroActivity;
 import com.shock.herogrind.world.internal.domain.HeroActivityRepository;
+import com.shock.herogrind.world.internal.domain.HeroActivityState;
 import com.shock.herogrind.world.internal.domain.WorldEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +29,7 @@ public class WorldTickUseCase {
     private final HeroFacade heroFacade;
     private final AreaFacade areaFacade;
     private final PartyFacade partyFacade;
+    private final CombatFacade combatFacade;
     private final HeroActivityRepository heroActivityRepository;
 
     private final Queue<WorldEvent> worldEventQueue = new ArrayDeque<>();
@@ -39,16 +43,21 @@ public class WorldTickUseCase {
         heroes.forEach(h -> {
                     log.trace("Processing hero {}", h.getId());
                     var currentActivity = heroActivityRepository.getOrIdle(h.getId());
-                    if (!currentActivity.isReadyForNextActivity()) {
+
+                    if (currentActivity.state().equals(HeroActivityState.IN_ENCOUNTER)) {
+                        resolveEncounterActivity(currentActivity);
+                        return;
+                    } else if (!currentActivity.isReadyForNextActivity()) {
                         log.trace("Hero {} not ready for next activity", h.getId());
                         return;
                     }
-
+                    log.trace("Hero {} ready for next activity", h.getId());
                     var heroParty = parties.stream()
                             .filter(p -> p.members().contains(h.getId()))
                             .findFirst();
 
                     var nextActivity = resolveActivity(currentActivity, heroParty);
+
 
                     heroActivityRepository.save(nextActivity);
                     if (!currentActivity.state().equals(nextActivity.state())) {
@@ -92,7 +101,24 @@ public class WorldTickUseCase {
     private HeroActivity resolveAreaActivity(HeroActivity current, UUID areaId) {
         return switch (current.state()) {
             case IDLE, RESTING, DUNGEON, IN_ENCOUNTER -> HeroActivity.roaming(current.heroId(), areaId);
-            case ROAMING -> HeroActivity.inEncounter(current.heroId(), areaId);
+            case ROAMING -> {
+                var encounter = combatFacade.startEncounter(current.heroId(), areaId);
+                yield HeroActivity.inEncounter(current.heroId(), areaId, encounter.encounterId());
+            }
         };
+    }
+
+    private HeroActivity resolveEncounterActivity(HeroActivity heroActivity) {
+        var encounterInfo = combatFacade.getEncounterById(heroActivity.encounterId());
+        if (!encounterInfo.isReadyForResolution()) {
+            return heroActivity;
+        }
+        var result = combatFacade.advanceEncounter(heroActivity.encounterId());
+        result.actions().forEach(a ->
+                worldEventQueue.add(WorldEvent.from(a)));
+        if (result.status().equals(EncounterStatusInfo.ENDED)) {
+            return HeroActivity.roaming(heroActivity.heroId(), heroActivity.areaId());
+        }
+        return heroActivity;
     }
 }

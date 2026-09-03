@@ -22,6 +22,11 @@ public class CombatFacadeImpl implements CombatFacade {
     private final EncounterRepository encounterRepository;
 
     @Override
+    public EncounterInfo getEncounterById(UUID encounterId) {
+        return Encounter.toInfo(encounterRepository.findById(encounterId), new ArrayList<>());
+    }
+
+    @Override
     public EncounterInfo startEncounter(UUID heroId, UUID areaId) {
         var enemy = monsterFacade.getMonsterInfoByAreaId(areaId);
         var hero = heroFacade.getHeroInfoById(heroId);
