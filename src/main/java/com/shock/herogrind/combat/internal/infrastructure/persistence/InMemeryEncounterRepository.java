@@ -24,4 +24,10 @@ public class InMemeryEncounterRepository implements EncounterRepository {
         // Implementation for finding the encounter by ID in memory
         return encounterStorage.get(encounterId);
     }
+
+    @Override
+    public void deleteById(UUID encounterId) {
+        // Implementation for deleting the encounter by ID in memory
+        encounterStorage.remove(encounterId);
+    }
 }

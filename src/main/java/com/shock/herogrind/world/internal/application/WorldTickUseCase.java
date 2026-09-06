@@ -1,8 +1,6 @@
 package com.shock.herogrind.world.internal.application;
 
-import com.shock.herogrind.area.api.AreaFacade;
 import com.shock.herogrind.combat.api.CombatFacade;
-import com.shock.herogrind.combat.api.EncounterStatusInfo;
 import com.shock.herogrind.hero.api.HeroFacade;
 import com.shock.herogrind.party.api.PartyFacade;
 import com.shock.herogrind.party.api.PartyInfo;
@@ -27,10 +25,10 @@ import java.util.UUID;
 public class WorldTickUseCase {
 
     private final HeroFacade heroFacade;
-    private final AreaFacade areaFacade;
     private final PartyFacade partyFacade;
     private final CombatFacade combatFacade;
     private final HeroActivityRepository heroActivityRepository;
+    private final EncounterActivityHandler encounterActivityHandler;
 
     private final Queue<WorldEvent> worldEventQueue = new ArrayDeque<>();
 
@@ -45,29 +43,31 @@ public class WorldTickUseCase {
                     var currentActivity = heroActivityRepository.getOrIdle(h.getId());
 
                     if (currentActivity.state().equals(HeroActivityState.IN_ENCOUNTER)) {
-                        resolveEncounterActivity(currentActivity);
-                        return;
-                    } else if (!currentActivity.isReadyForNextActivity()) {
-                        log.trace("Hero {} not ready for next activity", h.getId());
+                        var result = encounterActivityHandler.handle(currentActivity);
+
+                        result.combatActions()
+                                .forEach(a -> worldEventQueue.add(WorldEvent.from(a)));
+
+                        updateActivity(currentActivity, result.activity());
                         return;
                     }
-                    log.trace("Hero {} ready for next activity", h.getId());
+
+                    if (!currentActivity.isReadyForNextActivity()) {
+                        return;
+                    }
+
                     var heroParty = parties.stream()
                             .filter(p -> p.members().contains(h.getId()))
                             .findFirst();
 
                     var nextActivity = resolveActivity(currentActivity, heroParty);
+                    updateActivity(currentActivity, nextActivity);
 
-
-                    heroActivityRepository.save(nextActivity);
                     if (!currentActivity.state().equals(nextActivity.state())) {
-                        log.debug("Hero {} activity changed: {} -> {}", h.getId(), currentActivity.state(), nextActivity.state());
-                        log.debug("Queueing world event for hero {}", h.getId());
                         worldEventQueue.add(WorldEvent.from(nextActivity));
                     }
                 }
         );
-        log.debug("World tick completed");
     }
 
     public List<WorldEvent> getEvents() {
@@ -108,17 +108,13 @@ public class WorldTickUseCase {
         };
     }
 
-    private HeroActivity resolveEncounterActivity(HeroActivity heroActivity) {
-        var encounterInfo = combatFacade.getEncounterById(heroActivity.encounterId());
-        if (!encounterInfo.isReadyForResolution()) {
-            return heroActivity;
+    private void updateActivity(HeroActivity currentActivity, HeroActivity newActivity) {
+        if (currentActivity.equals(newActivity)) {
+            return;
         }
-        var result = combatFacade.advanceEncounter(heroActivity.encounterId());
-        result.actions().forEach(a ->
-                worldEventQueue.add(WorldEvent.from(a)));
-        if (result.status().equals(EncounterStatusInfo.ENDED)) {
-            return HeroActivity.roaming(heroActivity.heroId(), heroActivity.areaId());
+        heroActivityRepository.save(newActivity);
+        if (currentActivity.state() != newActivity.state()) {
+            worldEventQueue.add(WorldEvent.from(newActivity));
         }
-        return heroActivity;
     }
 }

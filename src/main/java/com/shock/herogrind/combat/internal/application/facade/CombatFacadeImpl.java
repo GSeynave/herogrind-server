@@ -46,14 +46,21 @@ public class CombatFacadeImpl implements CombatFacade {
             var hero = heroFacade.getHeroInfoById(encounter.heroId());
             var step =encounter.executeHeroAction(hero.attackDamage());
             encounter = step.encounter();
+            encounterRepository.save(encounter);
             actionsList.add(step.action());
         }
         if (!encounter.isEnded() && encounter.isEnemyReadyToAct()){
             var monster = monsterFacade.getMonsterInfoById(encounter.enemyId());
             var step = encounter.executeEnemyAction(monster.attackDamage());
             encounter = step.encounter();
+            encounterRepository.save(encounter);
             actionsList.add(step.action());
         }
         return Encounter.toInfo(encounter, actionsList);
+    }
+
+    @Override
+    public void endEncounter(UUID encounterId) {
+        encounterRepository.deleteById(encounterId);
     }
 }

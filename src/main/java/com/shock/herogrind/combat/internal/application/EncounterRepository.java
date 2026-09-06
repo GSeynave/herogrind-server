@@ -8,4 +8,5 @@ public interface EncounterRepository {
 
     void save(Encounter encounter);
     Encounter findById(UUID encounterId);
+    void deleteById(UUID encounterId);
 }

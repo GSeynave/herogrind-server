@@ -85,6 +85,10 @@ public record Encounter(
     public CombatStepResult executeEnemyAction(double damage) {
         double newHeroHealth = Math.max(0, heroHealth - damage);
         long currentTime = System.currentTimeMillis();
+        System.err.println("Executing enemy action: " + damage + " damage to hero. New hero health: " + newHeroHealth);
+        System.err.println("New Health: " + newHeroHealth );
+        var newState = newHeroHealth <= 0 ? EncounterStatus.ENDED : status;
+        System.err.println("New status: " + newState);
         var updatedEncounter = new Encounter(
                 id,
                 heroId,
@@ -95,7 +99,7 @@ public record Encounter(
                 enemyHealth,
                 currentTime,
                 getNextActionTime(DEFAULT_MONSTER_ATTACK_SPEED, currentTime),
-                newHeroHealth <= 0 ? EncounterStatus.ENDED : status
+                newState
         );
         var action = new CombatAction(
                 CombatActionType.ATTACK,
