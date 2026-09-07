@@ -32,6 +32,13 @@ public class EncounterActivityHandler {
         var result = combatFacade.advanceEncounter(activity.encounterId());
         var combatActions = result.actions();
         if (result.status().equals(EncounterStatusInfo.ENDED)) {
+            if (result.heroHealth() <= 0) {
+                combatFacade.endEncounter(result.encounterId());
+                return new EncounterActivityResult(
+                        HeroActivity.dead(activity.heroId(), activity.areaId()),
+                        combatActions
+                );
+            }
             return new EncounterActivityResult(
             HeroActivity.roaming(activity.heroId(), activity.areaId()),
             combatActions

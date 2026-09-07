@@ -54,6 +54,16 @@ public record HeroActivity(
                 now.plus(2, ChronoUnit.SECONDS).toEpochMilli()
         );
     }
+    public static HeroActivity dead(UUID heroId, UUID areaId){
+        var now = Instant.now();
+        return new HeroActivity(heroId,
+                areaId,
+                HeroActivityState.DEAD,
+                null,
+                now.toEpochMilli(),
+                now.plus(15, ChronoUnit.SECONDS).toEpochMilli()
+        );
+    }
 
     public Boolean isReadyForNextActivity(){
         return Instant.now().toEpochMilli()  >= this.nextResolutionAt;

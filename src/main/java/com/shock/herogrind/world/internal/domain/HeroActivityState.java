@@ -5,5 +5,6 @@ public enum HeroActivityState {
     ROAMING,
     IN_ENCOUNTER,
     RESTING,
-    DUNGEON
+    DUNGEON,
+    DEAD
 }

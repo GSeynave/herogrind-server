@@ -100,7 +100,7 @@ public class WorldTickUseCase {
 
     private HeroActivity resolveAreaActivity(HeroActivity current, UUID areaId) {
         return switch (current.state()) {
-            case IDLE, RESTING, DUNGEON, IN_ENCOUNTER -> HeroActivity.roaming(current.heroId(), areaId);
+            case IDLE, RESTING, DUNGEON, IN_ENCOUNTER, DEAD -> HeroActivity.roaming(current.heroId(), areaId);
             case ROAMING -> {
                 var encounter = combatFacade.startEncounter(current.heroId(), areaId);
                 yield HeroActivity.inEncounter(current.heroId(), areaId, encounter.encounterId());
