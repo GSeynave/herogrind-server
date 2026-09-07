@@ -24,8 +24,8 @@ public record Encounter(
         EncounterStatus status
 
 ) {
-    public static final double DEFAULT_HERO_ATTACK_SPEED = 1D;
-    public static final double DEFAULT_MONSTER_ATTACK_SPEED = 1.5D;
+    public static final double DEFAULT_HERO_ATTACK_SPEED = 0.5D;
+    public static final double DEFAULT_MONSTER_ATTACK_SPEED = 0.33D;
 
     public static Encounter start(HeroInfo heroInfo, MonsterInfo monsterInfo, Long currentTime) {
         return new Encounter(
@@ -33,16 +33,16 @@ public record Encounter(
                 heroInfo.id(),
                 heroInfo.health(),
                 currentTime,
-                getNextActionTime(DEFAULT_HERO_ATTACK_SPEED, currentTime),
+                getAttackInterval(DEFAULT_HERO_ATTACK_SPEED, currentTime),
                 monsterInfo.id(),
                 monsterInfo.health(),
                 currentTime,
-                getNextActionTime(DEFAULT_MONSTER_ATTACK_SPEED, currentTime),
+                getAttackInterval(DEFAULT_MONSTER_ATTACK_SPEED, currentTime),
                 EncounterStatus.STARTING
         );
     }
 
-    private static Long getNextActionTime(Double attackSpeed, Long lastActionAt) {
+    private static Long getAttackInterval(Double attackSpeed, Long lastActionAt) {
         return lastActionAt + (long) (1000 / attackSpeed);
     }
 
@@ -60,12 +60,13 @@ public record Encounter(
     public CombatStepResult executeHeroAction(double damage) {
         double newEnemyHealth = Math.max(0, enemyHealth - damage);
         long currentTime = System.currentTimeMillis();
+        System.err.println("Executing hero action: " + damage + " damage to enemy. New enemy health: " + newEnemyHealth);
         var updatedEncounter = new Encounter(
                 id,
                 heroId,
                 heroHealth,
                 currentTime,
-                getNextActionTime(DEFAULT_HERO_ATTACK_SPEED, currentTime),
+                getAttackInterval(DEFAULT_HERO_ATTACK_SPEED, currentTime),
                 enemyId,
                 newEnemyHealth,
                 enemyLastActionAt,
@@ -98,7 +99,7 @@ public record Encounter(
                 enemyId,
                 enemyHealth,
                 currentTime,
-                getNextActionTime(DEFAULT_MONSTER_ATTACK_SPEED, currentTime),
+                getAttackInterval(DEFAULT_MONSTER_ATTACK_SPEED, currentTime),
                 newState
         );
         var action = new CombatAction(

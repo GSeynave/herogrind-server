@@ -16,8 +16,8 @@ public class InMemoryHeroRepository implements HeroRepository {
 
     @PostConstruct
     void initSeed(){
-        var hero1 = new Hero(UUID.randomUUID(), "Hero 1", HeroRole.MELEE, 1, 15D, 3D, 1D);
-        var hero2 = new Hero(UUID.randomUUID(), "Hero 2", HeroRole.MELEE, 1, 15D, 3D, 1D);
+        var hero1 = new Hero(UUID.randomUUID(), "Hero 1", HeroRole.MELEE, 1, 50D, 3D, 1D);
+        var hero2 = new Hero(UUID.randomUUID(), "Hero 2", HeroRole.MELEE, 1, 50D, 3D, 1D);
         heroes.put(hero1.getId(), hero1);
         heroes.put(hero2.getId(), hero2);
 

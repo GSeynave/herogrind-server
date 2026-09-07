@@ -62,10 +62,6 @@ public class WorldTickUseCase {
 
                     var nextActivity = resolveActivity(currentActivity, heroParty);
                     updateActivity(currentActivity, nextActivity);
-
-                    if (!currentActivity.state().equals(nextActivity.state())) {
-                        worldEventQueue.add(WorldEvent.from(nextActivity));
-                    }
                 }
         );
     }
@@ -100,11 +96,13 @@ public class WorldTickUseCase {
 
     private HeroActivity resolveAreaActivity(HeroActivity current, UUID areaId) {
         return switch (current.state()) {
-            case IDLE, RESTING, DUNGEON, IN_ENCOUNTER, DEAD -> HeroActivity.roaming(current.heroId(), areaId);
+            case IDLE, RESTING, DUNGEON -> HeroActivity.roaming(current.heroId(), areaId);
             case ROAMING -> {
                 var encounter = combatFacade.startEncounter(current.heroId(), areaId);
                 yield HeroActivity.inEncounter(current.heroId(), areaId, encounter.encounterId());
             }
+            case IN_ENCOUNTER, DEAD ->
+                    throw new IllegalStateException("Hero " + current.heroId() + " is in an invalid state: " + current.state());
         };
     }
 

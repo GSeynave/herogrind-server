@@ -16,7 +16,7 @@ public class EncounterActivityHandler {
 
     public EncounterActivityResult handle(HeroActivity activity) {
         var encounterInfo = combatFacade.getEncounterById(activity.encounterId());
-        if(encounterInfo.status().equals(EncounterStatusInfo.ENDED)) {
+        if (encounterInfo.status().equals(EncounterStatusInfo.ENDED)) {
             combatFacade.endEncounter(encounterInfo.encounterId());
             return new EncounterActivityResult(
                     HeroActivity.roaming(activity.heroId(), activity.areaId()),
@@ -25,7 +25,7 @@ public class EncounterActivityHandler {
         }
         if (!encounterInfo.isReadyForResolution()) {
             return new EncounterActivityResult(
-                    HeroActivity.roaming(activity.heroId(), activity.areaId()),
+                    activity,
                     new ArrayList<>()
             );
         }
@@ -40,13 +40,13 @@ public class EncounterActivityHandler {
                 );
             }
             return new EncounterActivityResult(
-            HeroActivity.roaming(activity.heroId(), activity.areaId()),
-            combatActions
+                    HeroActivity.roaming(activity.heroId(), activity.areaId()),
+                    combatActions
             );
         }
         return new EncounterActivityResult(
-            activity,
-            combatActions
+                activity,
+                combatActions
         );
     }
 }
