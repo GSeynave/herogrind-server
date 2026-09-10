@@ -1,20 +1,20 @@
 package com.shock.herogrind.area.internal.domain;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.UUID;
 
 @Data
 @Builder
 public class Area {
 
-    private UUID id;
-    private String name;
-    private Boolean unlocked;
-    private AreaState state;
+  private UUID id;
+  private String name;
+  private Boolean unlocked;
+  private AreaState state;
 
-    public Boolean isUnlocked(){
-        return this.unlocked;
-    }
+  public Boolean isUnlocked() {
+    return this.unlocked;
+  }
 }

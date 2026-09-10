@@ -6,7 +6,9 @@ import java.util.UUID;
 
 public interface AreaRepository {
 
-    List<Area> findAll();
+  Area save(Area area);
 
-    Optional<Area> findById(UUID id);
+  List<Area> findAll();
+
+  Optional<Area> findById(UUID id);
 }

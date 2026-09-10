@@ -1,21 +1,27 @@
 package com.shock.herogrind.monster.internal.application;
 
-import com.shock.herogrind.monster.api.MonsterFacade;
-import com.shock.herogrind.monster.api.MonsterInfo;
-import org.springframework.stereotype.Component;
-
 import java.util.UUID;
 
+import org.springframework.stereotype.Component;
+
+import com.shock.herogrind.monster.api.MonsterFacade;
+import com.shock.herogrind.monster.api.MonsterInfo;
+
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class MonsterFacadeImpl implements MonsterFacade {
 
-    @Override
-    public MonsterInfo getMonsterInfoByAreaId(UUID areaId) {
-        return new MonsterInfo(UUID.randomUUID(),"Goblin", 20D, 2D);
-    }
+  private final GetMonsterUseCase getMonsterUseCase;
 
-    @Override
-    public MonsterInfo getMonsterInfoById(UUID monsterId) {
-        return new MonsterInfo(UUID.randomUUID(),"Goblin", 20D, 2D);
-    }
+  @Override
+  public MonsterInfo getMonsterInfoByAreaId(UUID areaId) {
+    return getMonsterUseCase.getMonsterInfoByAreaId(areaId);
+  }
+
+  @Override
+  public MonsterInfo getMonsterInfoById(UUID monsterId) {
+    return getMonsterUseCase.getMonsterInfoById(monsterId);
+  }
 }

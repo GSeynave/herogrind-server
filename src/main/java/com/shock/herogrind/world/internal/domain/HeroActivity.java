@@ -2,74 +2,74 @@ package com.shock.herogrind.world.internal.domain;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.UUID;
 
+import com.shock.herogrind.combat.api.EncounterInfo;
+
 public record HeroActivity(
-        UUID heroId,
-        UUID areaId,
-        HeroActivityState state,
-        UUID encounterId,
-        Long startedAt,
-        Long nextResolutionAt
-) {
+    UUID heroId,
+    UUID areaId,
+    HeroActivityState state,
+    Long startedAt,
+    Long nextResolutionAt,
+    Optional<EncounterInfo> encounterInfo) {
 
+  public static HeroActivity idle(UUID heroId) {
+    var now = Instant.now();
+    return new HeroActivity(heroId,
+        null,
+        HeroActivityState.IDLE,
+        now.toEpochMilli(),
+        now.plus(0, ChronoUnit.SECONDS).toEpochMilli(),
+        Optional.empty());
+  }
 
-    public static HeroActivity idle(UUID heroId){
-        var now = Instant.now();
-        return new HeroActivity(heroId,
-                null,
-                HeroActivityState.IDLE,
-                null,
-                now.toEpochMilli(),
-                now.plus(0, ChronoUnit.SECONDS).toEpochMilli()
-        );
-    }
-    public static HeroActivity inDungeon(UUID heroId){
-        var now = Instant.now();
-        return new HeroActivity(heroId,
-                null,
-                HeroActivityState.DUNGEON,
-                null,
-                now.toEpochMilli(),
-                now.plus(3, ChronoUnit.SECONDS).toEpochMilli()
-        );
-    }
-    public static HeroActivity inEncounter(UUID heroId, UUID areaId, UUID encounterId){
-        var now = Instant.now();
-        return new HeroActivity(heroId,
-                areaId,
-                HeroActivityState.IN_ENCOUNTER,
-                encounterId,
-                now.toEpochMilli(),
-                now.plus(3, ChronoUnit.SECONDS).toEpochMilli()
-        );
-    }
-    public static HeroActivity roaming(UUID heroId, UUID areaId){
-        var now = Instant.now();
-        return new HeroActivity(heroId,
-                areaId,
-                HeroActivityState.ROAMING,
-                null,
-                now.toEpochMilli(),
-                now.plus(2, ChronoUnit.SECONDS).toEpochMilli()
-        );
-    }
-    public static HeroActivity dead(UUID heroId, UUID areaId){
-        var now = Instant.now();
-        return new HeroActivity(heroId,
-                areaId,
-                HeroActivityState.DEAD,
-                null,
-                now.toEpochMilli(),
-                now.plus(15, ChronoUnit.SECONDS).toEpochMilli()
-        );
-    }
+  public static HeroActivity inDungeon(UUID heroId) {
+    var now = Instant.now();
+    return new HeroActivity(heroId,
+        null,
+        HeroActivityState.DUNGEON,
+        now.toEpochMilli(),
+        now.plus(3, ChronoUnit.SECONDS).toEpochMilli(),
+        Optional.empty());
+  }
 
-    public Boolean isReadyForNextActivity(){
-        return Instant.now().toEpochMilli()  >= this.nextResolutionAt;
-    }
+  public static HeroActivity inEncounter(UUID heroId, UUID areaId, EncounterInfo encounterInfo) {
+    var now = Instant.now();
+    return new HeroActivity(heroId,
+        areaId,
+        HeroActivityState.IN_ENCOUNTER,
+        now.toEpochMilli(),
+        now.plus(3, ChronoUnit.SECONDS).toEpochMilli(),
+        Optional.of(encounterInfo));
+  }
 
-    public String log(){
-        return String.format("Hero {%s} is currently in {%s}", heroId, state());
-    }
+  public static HeroActivity roaming(UUID heroId, UUID areaId) {
+    var now = Instant.now();
+    return new HeroActivity(heroId,
+        areaId,
+        HeroActivityState.ROAMING,
+        now.toEpochMilli(),
+        now.plus(2, ChronoUnit.SECONDS).toEpochMilli(),
+        Optional.empty());
+  }
+
+  public static HeroActivity dead(UUID heroId, UUID areaId) {
+    var now = Instant.now();
+    return new HeroActivity(heroId,
+        areaId,
+        HeroActivityState.DEAD,
+        now.toEpochMilli(),
+        now.plus(15, ChronoUnit.SECONDS).toEpochMilli(),
+        Optional.empty());
+  }
+
+  public Boolean isReadyForNextActivity() {
+    return Instant.now().toEpochMilli() >= this.nextResolutionAt;
+  }
+
+  public String log() {
+    return String.format("Hero {%s} is currently in {%s}", heroId, state());
+  }
 }
