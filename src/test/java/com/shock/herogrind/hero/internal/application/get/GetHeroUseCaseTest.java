@@ -37,7 +37,7 @@ class GetHeroUseCaseTest {
         assertEquals(hero.getLevel(), result.getLevel());
         assertEquals(hero.getRole(), result.getRole());
         assertEquals(hero.getHealth(), result.getHealth());
-        assertEquals(hero.getAttack(), result.getAttack());
+        assertEquals(hero.getAttack(), result.getAttackDamage());
         assertEquals(hero.getDefense(), result.getDefense());
     }
 

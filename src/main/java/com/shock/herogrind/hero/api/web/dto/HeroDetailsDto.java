@@ -18,6 +18,6 @@ public record HeroDetailsDto(
 
         return new HeroDetailsDto(
                 view.getId(), view.getName(), view.getRole(), view.getLevel(), view.getHealth(),
-                view.getAttack(), view.getDefense());
+                view.getAttackDamage(), view.getDefense());
     }
 }

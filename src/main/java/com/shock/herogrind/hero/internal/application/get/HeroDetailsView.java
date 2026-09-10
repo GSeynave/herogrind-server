@@ -16,7 +16,7 @@ public class HeroDetailsView {
     private HeroRole role;
     private Integer level;
     private Double health;
-    private Double attack;
+    private Double attackDamage;
     private Double defense;
 
     public static HeroDetailsView from(Hero domain) {
