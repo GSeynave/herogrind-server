@@ -1,0 +1,8 @@
+
+public record MapPosition(int x, int y) {
+  public MapPosition {
+    if (x < 0 || y < 0) {
+      throw new IllegalArgumentException("Map position coordinates must be non-negative");
+    }
+  }
+}
