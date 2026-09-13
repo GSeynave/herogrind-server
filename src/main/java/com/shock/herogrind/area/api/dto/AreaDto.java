@@ -1,13 +1,15 @@
 package com.shock.herogrind.area.api.dto;
 
-import com.shock.herogrind.area.internal.application.AreaView;
-
 import java.util.UUID;
 
-public record AreaDto(UUID id, String name) {
+import com.shock.herogrind.area.internal.application.AreaView;
+import com.shock.herogrind.area.internal.domain.MapPosition;
+import com.shock.herogrind.area.internal.domain.Size;
 
-    public static AreaDto from(AreaView view){
-        return new AreaDto(view.id(), view.name());
-    }
+public record AreaDto(UUID id, String name, MapPosition position, Size size) {
+
+  public static AreaDto from(AreaView view) {
+    return new AreaDto(view.id(), view.name(), view.mapPosition(), view.size());
+  }
 
 }
