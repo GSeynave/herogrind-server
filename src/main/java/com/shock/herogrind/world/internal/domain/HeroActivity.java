@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.shock.herogrind.combat.api.EncounterInfo;
+import com.shock.herogrind.combat.api.GhostInfo;
 
 public record HeroActivity(
     UUID heroId,
@@ -13,7 +14,8 @@ public record HeroActivity(
     HeroActivityState state,
     Long startedAt,
     Long nextResolutionAt,
-    Optional<EncounterInfo> encounterInfo) {
+    Optional<EncounterInfo> encounterInfo,
+    Optional<GhostInfo> ghostInfo) {
 
   public static HeroActivity idle(UUID heroId) {
     var now = Instant.now();
@@ -22,6 +24,7 @@ public record HeroActivity(
         HeroActivityState.IDLE,
         now.toEpochMilli(),
         now.plus(0, ChronoUnit.SECONDS).toEpochMilli(),
+        Optional.empty(),
         Optional.empty());
   }
 
@@ -32,6 +35,7 @@ public record HeroActivity(
         HeroActivityState.DUNGEON,
         now.toEpochMilli(),
         now.plus(3, ChronoUnit.SECONDS).toEpochMilli(),
+        Optional.empty(),
         Optional.empty());
   }
 
@@ -42,7 +46,8 @@ public record HeroActivity(
         HeroActivityState.IN_ENCOUNTER,
         now.toEpochMilli(),
         now.plus(3, ChronoUnit.SECONDS).toEpochMilli(),
-        Optional.of(encounterInfo));
+        Optional.of(encounterInfo),
+        Optional.empty());
   }
 
   public static HeroActivity roaming(UUID heroId, UUID areaId) {
@@ -52,6 +57,29 @@ public record HeroActivity(
         HeroActivityState.ROAMING,
         now.toEpochMilli(),
         now.plus(2, ChronoUnit.SECONDS).toEpochMilli(),
+        Optional.empty(),
+        Optional.empty());
+  }
+
+  public static HeroActivity ghostTraveling(UUID heroId, UUID areaId, GhostInfo ghostInfo) {
+    var now = Instant.now();
+    return new HeroActivity(heroId,
+        areaId,
+        HeroActivityState.GHOST_WAITING,
+        now.toEpochMilli(),
+        now.toEpochMilli(),
+        Optional.empty(),
+        Optional.empty());
+  }
+
+  public static HeroActivity ghostWaiting(UUID heroId, UUID areaId, GhostInfo ghostInfo) {
+    var now = Instant.now();
+    return new HeroActivity(heroId,
+        areaId,
+        HeroActivityState.GHOST_WAITING,
+        now.toEpochMilli(),
+        now.toEpochMilli(),
+        Optional.empty(),
         Optional.empty());
   }
 
@@ -62,11 +90,29 @@ public record HeroActivity(
         HeroActivityState.DEAD,
         now.toEpochMilli(),
         now.plus(15, ChronoUnit.SECONDS).toEpochMilli(),
+        Optional.empty(),
+        Optional.empty());
+  }
+
+  public static HeroActivity dying(UUID heroId, UUID areaId) {
+    var now = Instant.now();
+    return new HeroActivity(heroId,
+        areaId,
+        HeroActivityState.DYING,
+        now.toEpochMilli(),
+        now.plus(3, ChronoUnit.SECONDS).toEpochMilli(),
+        Optional.empty(),
         Optional.empty());
   }
 
   public Boolean isReadyForNextActivity() {
     return Instant.now().toEpochMilli() >= this.nextResolutionAt;
+  }
+
+  public Boolean isGhost() {
+    return this.state.equals(HeroActivityState.GHOST_WAITING)
+        || this.state.equals(HeroActivityState.GHOST_TRAVELING)
+        || this.state.equals(HeroActivityState.GHOST_RESURRECTING);
   }
 
   public String log() {

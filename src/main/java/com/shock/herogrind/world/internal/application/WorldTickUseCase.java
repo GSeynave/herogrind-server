@@ -31,6 +31,7 @@ public class WorldTickUseCase {
   private final CombatFacade combatFacade;
   private final HeroActivityRepository heroActivityRepository;
   private final EncounterActivityHandler encounterActivityHandler;
+  private final GhostActivityHandler ghostActivityHandler;
 
   private final Queue<WorldEvent> worldEventQueue = new ArrayDeque<>();
 
@@ -44,6 +45,11 @@ public class WorldTickUseCase {
       log.trace("Processing hero {}", h.getId());
       var currentActivity = heroActivityRepository.getOrIdle(h.getId());
 
+      if (currentActivity.isGhost()) {
+        ghostActivityHandler.handle(currentActivity).ifPresent(newActivity -> {
+          updateActivity(currentActivity, newActivity);
+        });
+      }
       if (currentActivity.state().equals(HeroActivityState.IN_ENCOUNTER)) {
         var result = encounterActivityHandler.handle(currentActivity);
 
@@ -102,7 +108,9 @@ public class WorldTickUseCase {
         var encounter = combatFacade.startEncounter(current.heroId(), areaId);
         yield HeroActivity.inEncounter(current.heroId(), areaId, encounter);
       }
-      case IN_ENCOUNTER, DEAD ->
+      case DYING -> HeroActivity.dead(current.heroId(), areaId);
+      case DEAD -> HeroActivity.ghostWaiting(current.heroId(), areaId, null);
+      case IN_ENCOUNTER, GHOST_RESURRECTING, GHOST_TRAVELING, GHOST_WAITING ->
         throw new IllegalStateException("Hero " + current.heroId() + " is in an invalid state: " + current.state());
     };
   }

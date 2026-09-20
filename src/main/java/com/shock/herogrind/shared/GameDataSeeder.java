@@ -89,7 +89,7 @@ public class GameDataSeeder {
     areaConnectionRepository.save(oldRuins.getId(), abandonedMine.getId());
     areaConnectionRepository.save(oldRuins.getId(), graveyard.getId());
 
-    var m1 = new Monster(UUID.randomUUID(), "Goblin", 20D, 1D, darkForest.getId());
+    var m1 = new Monster(UUID.randomUUID(), "Goblin", 20D, 30D, darkForest.getId());
     var m2 = new Monster(UUID.randomUUID(), "Wolf", 30D, 2D, abandonedMine.getId());
     var m3 = new Monster(UUID.randomUUID(), "Skeleton", 40D, 3D, oldRuins.getId());
     monsterRepository.save(m1);

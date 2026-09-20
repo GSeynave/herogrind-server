@@ -39,7 +39,7 @@ public class EncounterActivityHandler {
       if (result.heroHealth() <= 0) {
         combatFacade.endEncounter(result.encounterId());
         return new EncounterActivityResult(
-            HeroActivity.dead(activity.heroId(), activity.areaId()),
+            HeroActivity.dying(activity.heroId(), activity.areaId()),
             combatActions);
       }
       return new EncounterActivityResult(
