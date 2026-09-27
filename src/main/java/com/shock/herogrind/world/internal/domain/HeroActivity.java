@@ -14,8 +14,7 @@ public record HeroActivity(
     HeroActivityState state,
     Long startedAt,
     Long nextResolutionAt,
-    Optional<EncounterInfo> encounterInfo,
-    Optional<GhostInfo> ghostInfo) {
+    Optional<HeroActivityPayload> payload) {
 
   public static HeroActivity idle(UUID heroId) {
     var now = Instant.now();
@@ -24,7 +23,6 @@ public record HeroActivity(
         HeroActivityState.IDLE,
         now.toEpochMilli(),
         now.plus(0, ChronoUnit.SECONDS).toEpochMilli(),
-        Optional.empty(),
         Optional.empty());
   }
 
@@ -35,7 +33,6 @@ public record HeroActivity(
         HeroActivityState.DUNGEON,
         now.toEpochMilli(),
         now.plus(3, ChronoUnit.SECONDS).toEpochMilli(),
-        Optional.empty(),
         Optional.empty());
   }
 
@@ -46,8 +43,8 @@ public record HeroActivity(
         HeroActivityState.IN_ENCOUNTER,
         now.toEpochMilli(),
         now.plus(3, ChronoUnit.SECONDS).toEpochMilli(),
-        Optional.of(encounterInfo),
-        Optional.empty());
+        Optional.of(EncounterActivity.fromEncounterInfo(encounterInfo)));
+
   }
 
   public static HeroActivity roaming(UUID heroId, UUID areaId) {
@@ -57,19 +54,27 @@ public record HeroActivity(
         HeroActivityState.ROAMING,
         now.toEpochMilli(),
         now.plus(2, ChronoUnit.SECONDS).toEpochMilli(),
-        Optional.empty(),
         Optional.empty());
   }
 
-  public static HeroActivity ghostTraveling(UUID heroId, UUID areaId, GhostInfo ghostInfo) {
+  public static HeroActivity ghostResurrecting(UUID heroId, UUID areaId, GhostActivity ghostActivity) {
     var now = Instant.now();
     return new HeroActivity(heroId,
         areaId,
-        HeroActivityState.GHOST_WAITING,
+        HeroActivityState.GHOST_RESURRECTING,
         now.toEpochMilli(),
+        ghostActivity.getResurrectionEndAt(),
+        Optional.of(ghostActivity));
+  }
+
+  public static HeroActivity ghostTraveling(UUID heroId, UUID areaId, GhostActivity ghostActivity) {
+    var now = Instant.now();
+    return new HeroActivity(heroId,
+        areaId,
+        HeroActivityState.GHOST_TRAVELING,
         now.toEpochMilli(),
-        Optional.empty(),
-        Optional.empty());
+        ghostActivity.getArrivalAt(),
+        Optional.of(ghostActivity));
   }
 
   public static HeroActivity ghostWaiting(UUID heroId, UUID areaId, GhostInfo ghostInfo) {
@@ -78,8 +83,7 @@ public record HeroActivity(
         areaId,
         HeroActivityState.GHOST_WAITING,
         now.toEpochMilli(),
-        now.toEpochMilli(),
-        Optional.empty(),
+        now.plus(2, ChronoUnit.SECONDS).toEpochMilli(),
         Optional.empty());
   }
 
@@ -89,8 +93,7 @@ public record HeroActivity(
         areaId,
         HeroActivityState.DEAD,
         now.toEpochMilli(),
-        now.plus(15, ChronoUnit.SECONDS).toEpochMilli(),
-        Optional.empty(),
+        now.plus(3, ChronoUnit.SECONDS).toEpochMilli(),
         Optional.empty());
   }
 
@@ -101,7 +104,6 @@ public record HeroActivity(
         HeroActivityState.DYING,
         now.toEpochMilli(),
         now.plus(3, ChronoUnit.SECONDS).toEpochMilli(),
-        Optional.empty(),
         Optional.empty());
   }
 

@@ -44,11 +44,26 @@ public class WorldTickUseCase {
     heroes.forEach(h -> {
       log.trace("Processing hero {}", h.getId());
       var currentActivity = heroActivityRepository.getOrIdle(h.getId());
+      if (currentActivity.state().equals(HeroActivityState.DYING)) {
+        if (currentActivity.isReadyForNextActivity()) {
+          var newActivity = HeroActivity.dead(currentActivity.heroId(), currentActivity.areaId());
+          updateActivity(currentActivity, newActivity);
+        }
+        return;
+      }
+      if (currentActivity.state().equals(HeroActivityState.DEAD)) {
+        if (currentActivity.isReadyForNextActivity()) {
+          var newActivity = HeroActivity.ghostWaiting(currentActivity.heroId(), currentActivity.areaId(), null);
+          updateActivity(currentActivity, newActivity);
+        }
+        return;
+      }
 
       if (currentActivity.isGhost()) {
         ghostActivityHandler.handle(currentActivity).ifPresent(newActivity -> {
           updateActivity(currentActivity, newActivity);
         });
+        return;
       }
       if (currentActivity.state().equals(HeroActivityState.IN_ENCOUNTER)) {
         var result = encounterActivityHandler.handle(currentActivity);
@@ -68,6 +83,9 @@ public class WorldTickUseCase {
           .filter(p -> p.members().contains(h.getId()))
           .findFirst();
 
+      if (heroParty.isEmpty()) {
+        return;
+      }
       var nextActivity = resolveActivity(currentActivity, heroParty);
       updateActivity(currentActivity, nextActivity);
     });
@@ -108,9 +126,7 @@ public class WorldTickUseCase {
         var encounter = combatFacade.startEncounter(current.heroId(), areaId);
         yield HeroActivity.inEncounter(current.heroId(), areaId, encounter);
       }
-      case DYING -> HeroActivity.dead(current.heroId(), areaId);
-      case DEAD -> HeroActivity.ghostWaiting(current.heroId(), areaId, null);
-      case IN_ENCOUNTER, GHOST_RESURRECTING, GHOST_TRAVELING, GHOST_WAITING ->
+      default ->
         throw new IllegalStateException("Hero " + current.heroId() + " is in an invalid state: " + current.state());
     };
   }

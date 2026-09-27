@@ -11,6 +11,10 @@ public record AreaInfo(UUID id, String name, Boolean isUnlocked) {
   }
 
   public boolean isTown() {
-    return this.name.equalsIgnoreCase("town");
+    return this.name.equalsIgnoreCase("Town");
+  }
+
+  public boolean isGraveyard() {
+    return this.name.equalsIgnoreCase("Graveyard");
   }
 }
