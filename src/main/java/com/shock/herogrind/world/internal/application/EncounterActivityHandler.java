@@ -24,6 +24,7 @@ public class EncounterActivityHandler {
       throw new IllegalStateException("Encounter info is missing for activity: " + activity);
     }
     EncounterActivity encounter = (EncounterActivity) activity.payload().get();
+    encounter.log();
     var encounterInfo = combatFacade.getEncounterById(encounter.getEncounterId());
     if (encounterInfo.status().equals(EncounterStatusInfo.ENDED)) {
       combatFacade.endEncounter(encounterInfo.encounterId());

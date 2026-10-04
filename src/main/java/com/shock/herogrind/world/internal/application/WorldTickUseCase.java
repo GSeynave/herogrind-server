@@ -66,6 +66,7 @@ public class WorldTickUseCase {
         return;
       }
       if (currentActivity.state().equals(HeroActivityState.IN_ENCOUNTER)) {
+        currentActivity.log();
         var result = encounterActivityHandler.handle(currentActivity);
 
         result.combatActions()

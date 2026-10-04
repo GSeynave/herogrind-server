@@ -37,6 +37,17 @@ public class EncounterActivity implements HeroActivityPayload {
     activity.setActions(encounterInfo.actions());
     activity.setNextResolutionAt(encounterInfo.nextResolutionAt());
     return activity;
+  }
 
+  public void log() {
+    System.out.println("EncounterActivity {");
+    System.out.println("  encounterId: " + encounterId);
+    System.out.println("  heroId: " + heroId);
+    System.out.println("  heroHealth: " + heroHealth);
+    System.out.println("  enemyId: " + enemyId);
+    System.out.println("  enemyHealth: " + enemyHealth);
+    System.out.println("  status: " + status);
+    System.out.println("  actions: " + actions);
+    System.out.println("  nextResolutionAt: " + nextResolutionAt);
   }
 }

@@ -118,6 +118,6 @@ public record HeroActivity(
   }
 
   public String log() {
-    return String.format("Hero {%s} is currently in {%s}", heroId, state());
+    return String.format("Hero {%s} is currently in {%s}, ", heroId, state());
   }
 }
