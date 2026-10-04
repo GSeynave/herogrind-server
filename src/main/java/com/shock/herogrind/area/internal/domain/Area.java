@@ -13,6 +13,8 @@ public class Area {
   private String name;
   private Boolean unlocked;
   private AreaState state;
+  private MapPosition mapPosition;
+  private Size size;
 
   public Boolean isUnlocked() {
     return this.unlocked;

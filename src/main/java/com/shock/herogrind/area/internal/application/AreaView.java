@@ -1,12 +1,14 @@
 package com.shock.herogrind.area.internal.application;
 
-import com.shock.herogrind.area.internal.domain.Area;
-
 import java.util.UUID;
 
-public record AreaView(UUID id, String name, Boolean isUnlocked) {
+import com.shock.herogrind.area.internal.domain.Area;
+import com.shock.herogrind.area.internal.domain.MapPosition;
+import com.shock.herogrind.area.internal.domain.Size;
 
-    public static AreaView from(Area area){
-        return new AreaView(area.getId(), area.getName(), area.isUnlocked());
-    }
+public record AreaView(UUID id, String name, Boolean isUnlocked, MapPosition mapPosition, Size size) {
+
+  public static AreaView from(Area area) {
+    return new AreaView(area.getId(), area.getName(), area.isUnlocked(), area.getMapPosition(), area.getSize());
+  }
 }

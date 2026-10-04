@@ -31,6 +31,7 @@ public class WorldTickUseCase {
   private final CombatFacade combatFacade;
   private final HeroActivityRepository heroActivityRepository;
   private final EncounterActivityHandler encounterActivityHandler;
+  private final GhostActivityHandler ghostActivityHandler;
 
   private final Queue<WorldEvent> worldEventQueue = new ArrayDeque<>();
 
@@ -43,8 +44,29 @@ public class WorldTickUseCase {
     heroes.forEach(h -> {
       log.trace("Processing hero {}", h.getId());
       var currentActivity = heroActivityRepository.getOrIdle(h.getId());
+      if (currentActivity.state().equals(HeroActivityState.DYING)) {
+        if (currentActivity.isReadyForNextActivity()) {
+          var newActivity = HeroActivity.dead(currentActivity.heroId(), currentActivity.areaId());
+          updateActivity(currentActivity, newActivity);
+        }
+        return;
+      }
+      if (currentActivity.state().equals(HeroActivityState.DEAD)) {
+        if (currentActivity.isReadyForNextActivity()) {
+          var newActivity = HeroActivity.ghostWaiting(currentActivity.heroId(), currentActivity.areaId(), null);
+          updateActivity(currentActivity, newActivity);
+        }
+        return;
+      }
 
+      if (currentActivity.isGhost()) {
+        ghostActivityHandler.handle(currentActivity).ifPresent(newActivity -> {
+          updateActivity(currentActivity, newActivity);
+        });
+        return;
+      }
       if (currentActivity.state().equals(HeroActivityState.IN_ENCOUNTER)) {
+        currentActivity.log();
         var result = encounterActivityHandler.handle(currentActivity);
 
         result.combatActions()
@@ -62,6 +84,9 @@ public class WorldTickUseCase {
           .filter(p -> p.members().contains(h.getId()))
           .findFirst();
 
+      if (heroParty.isEmpty()) {
+        return;
+      }
       var nextActivity = resolveActivity(currentActivity, heroParty);
       updateActivity(currentActivity, nextActivity);
     });
@@ -102,7 +127,7 @@ public class WorldTickUseCase {
         var encounter = combatFacade.startEncounter(current.heroId(), areaId);
         yield HeroActivity.inEncounter(current.heroId(), areaId, encounter);
       }
-      case IN_ENCOUNTER, DEAD ->
+      default ->
         throw new IllegalStateException("Hero " + current.heroId() + " is in an invalid state: " + current.state());
     };
   }
