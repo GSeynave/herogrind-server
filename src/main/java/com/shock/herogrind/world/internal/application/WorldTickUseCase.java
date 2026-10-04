@@ -3,17 +3,11 @@ package com.shock.herogrind.world.internal.application;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Queue;
-import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.shock.herogrind.combat.api.CombatFacade;
 import com.shock.herogrind.hero.api.HeroFacade;
-import com.shock.herogrind.party.api.PartyFacade;
-import com.shock.herogrind.party.api.PartyInfo;
-import com.shock.herogrind.world.internal.domain.HeroActivity;
 import com.shock.herogrind.world.internal.domain.HeroActivityRepository;
 import com.shock.herogrind.world.internal.domain.HeroActivityState;
 import com.shock.herogrind.world.internal.domain.WorldEvent;
@@ -27,69 +21,27 @@ import lombok.extern.slf4j.Slf4j;
 public class WorldTickUseCase {
 
   private final HeroFacade heroFacade;
-  private final PartyFacade partyFacade;
-  private final CombatFacade combatFacade;
   private final HeroActivityRepository heroActivityRepository;
-  private final EncounterActivityHandler encounterActivityHandler;
-  private final GhostActivityHandler ghostActivityHandler;
+  private final List<ActivityHandler> activityHandlers;
 
   private final Queue<WorldEvent> worldEventQueue = new ArrayDeque<>();
 
   public void execute() {
     log.debug("Starting world tick");
     var heroes = heroFacade.getAllHeroes();
-    var parties = partyFacade.getPartyInfo();
     log.debug("Processing {} heroes", heroes.size());
 
     heroes.forEach(h -> {
       log.trace("Processing hero {}", h.getId());
       var currentActivity = heroActivityRepository.getOrIdle(h.getId());
-      if (currentActivity.state().equals(HeroActivityState.DYING)) {
-        if (currentActivity.isReadyForNextActivity()) {
-          var newActivity = HeroActivity.dead(currentActivity.heroId(), currentActivity.areaId());
-          updateActivity(currentActivity, newActivity);
-        }
-        return;
-      }
-      if (currentActivity.state().equals(HeroActivityState.DEAD)) {
-        if (currentActivity.isReadyForNextActivity()) {
-          var newActivity = HeroActivity.ghostWaiting(currentActivity.heroId(), currentActivity.areaId(), null);
-          updateActivity(currentActivity, newActivity);
-        }
-        return;
-      }
 
-      if (currentActivity.isGhost()) {
-        ghostActivityHandler.handle(currentActivity).ifPresent(newActivity -> {
-          updateActivity(currentActivity, newActivity);
-        });
-        return;
-      }
-      if (currentActivity.state().equals(HeroActivityState.IN_ENCOUNTER)) {
-        currentActivity.log();
-        var result = encounterActivityHandler.handle(currentActivity);
+      var result = activityHandler(currentActivity.state()).handle(currentActivity);
 
-        result.combatActions()
-            .forEach(a -> worldEventQueue.add(WorldEvent.from(a)));
+      result.getNextActivity().ifPresent(heroActivityRepository::save);
 
-        updateActivity(currentActivity, result.activity());
-        return;
-      }
-
-      if (!currentActivity.isReadyForNextActivity()) {
-        return;
-      }
-
-      var heroParty = parties.stream()
-          .filter(p -> p.members().contains(h.getId()))
-          .findFirst();
-
-      if (heroParty.isEmpty()) {
-        return;
-      }
-      var nextActivity = resolveActivity(currentActivity, heroParty);
-      updateActivity(currentActivity, nextActivity);
+      result.getEvents().forEach(e -> worldEventQueue.add(e));
     });
+
   }
 
   public List<WorldEvent> getEvents() {
@@ -104,41 +56,10 @@ public class WorldTickUseCase {
     return events;
   }
 
-  protected HeroActivity resolveActivity(HeroActivity current, Optional<PartyInfo> party) {
-    if (party.isEmpty()) {
-      log.trace("Hero {} has no party, setting to idle", current.heroId());
-      return HeroActivity.idle(current.heroId());
-    }
-
-    var heroParty = party.get();
-
-    if (heroParty.partyType().equals("ACTIVE")) {
-      log.trace("Hero {} in active party, moving to dungeon", current.heroId());
-      return HeroActivity.inDungeon(current.heroId());
-    }
-
-    return resolveAreaActivity(current, heroParty.areaId());
-  }
-
-  private HeroActivity resolveAreaActivity(HeroActivity current, UUID areaId) {
-    return switch (current.state()) {
-      case IDLE, RESTING, DUNGEON -> HeroActivity.roaming(current.heroId(), areaId);
-      case ROAMING -> {
-        var encounter = combatFacade.startEncounter(current.heroId(), areaId);
-        yield HeroActivity.inEncounter(current.heroId(), areaId, encounter);
-      }
-      default ->
-        throw new IllegalStateException("Hero " + current.heroId() + " is in an invalid state: " + current.state());
-    };
-  }
-
-  private void updateActivity(HeroActivity currentActivity, HeroActivity newActivity) {
-    if (currentActivity.equals(newActivity)) {
-      return;
-    }
-    heroActivityRepository.save(newActivity);
-    if (currentActivity.state() != newActivity.state()) {
-      worldEventQueue.add(WorldEvent.from(newActivity));
-    }
+  private ActivityHandler activityHandler(HeroActivityState state) {
+    return activityHandlers.stream()
+        .filter(h -> h.supports(state))
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("No handler for state: " + state));
   }
 }

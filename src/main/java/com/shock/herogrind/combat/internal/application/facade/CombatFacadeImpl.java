@@ -1,6 +1,7 @@
 package com.shock.herogrind.combat.internal.application.facade;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -26,6 +27,15 @@ public class CombatFacadeImpl implements CombatFacade {
   @Override
   public EncounterInfo getEncounterById(UUID encounterId) {
     return Encounter.toInfo(encounterRepository.findById(encounterId), new ArrayList<>());
+  }
+
+  @Override
+  public Optional<EncounterInfo> getEncounterByHeroId(UUID heroId) {
+    var encounter = encounterRepository.findByHeroId(heroId);
+    if (encounter == null) {
+      return Optional.empty();
+    }
+    return Optional.of(Encounter.toInfo(encounterRepository.findByHeroId(heroId).get(), new ArrayList<>()));
   }
 
   @Override

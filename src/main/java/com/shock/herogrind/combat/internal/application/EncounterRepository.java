@@ -1,12 +1,17 @@
 package com.shock.herogrind.combat.internal.application;
 
-import com.shock.herogrind.combat.internal.domain.Encounter;
-
+import java.util.Optional;
 import java.util.UUID;
+
+import com.shock.herogrind.combat.internal.domain.Encounter;
 
 public interface EncounterRepository {
 
-    void save(Encounter encounter);
-    Encounter findById(UUID encounterId);
-    void deleteById(UUID encounterId);
+  void save(Encounter encounter);
+
+  Encounter findById(UUID encounterId);
+
+  Optional<Encounter> findByHeroId(UUID heroId);
+
+  void deleteById(UUID encounterId);
 }

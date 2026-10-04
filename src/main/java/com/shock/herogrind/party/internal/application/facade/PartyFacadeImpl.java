@@ -1,6 +1,7 @@
 package com.shock.herogrind.party.internal.application.facade;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -39,6 +40,19 @@ public class PartyFacadeImpl implements PartyFacade {
     RemoveMemberFromAreaPartyCommand command = new RemoveMemberFromAreaPartyCommand(heroId, areaId);
     removeMemberFromAreaPartyUseCase.execute(command);
 
+  }
+
+  @Override
+  public Optional<PartyInfo> getPartyInfoByHeroId(UUID heroId) {
+    var parties = getPartiesUseCase.execute();
+    return parties.stream()
+        .filter(p -> p.members().stream().anyMatch(m -> m.getId().equals(heroId)))
+        .findFirst()
+        .map(p -> new PartyInfo(
+            p.id(),
+            p.members().stream().map(HeroPartyInfo::getId).toList(),
+            p.areaId(),
+            p.partyType()));
   }
 
 }
