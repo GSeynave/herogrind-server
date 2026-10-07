@@ -1,6 +1,8 @@
 package com.shock.herogrind.combat.internal.infrastructure.persistence;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,5 +41,10 @@ public class InMemeryEncounterRepository implements EncounterRepository {
   public void deleteById(UUID encounterId) {
     // Implementation for deleting the encounter by ID in memory
     encounterStorage.remove(encounterId);
+  }
+
+  @Override
+  public List<Encounter> findAll() {
+    return new ArrayList<>(encounterStorage.values());
   }
 }

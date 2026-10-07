@@ -1,5 +1,6 @@
 package com.shock.herogrind.combat.internal.application;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,4 +15,6 @@ public interface EncounterRepository {
   Optional<Encounter> findByHeroId(UUID heroId);
 
   void deleteById(UUID encounterId);
+
+  List<Encounter> findAll();
 }

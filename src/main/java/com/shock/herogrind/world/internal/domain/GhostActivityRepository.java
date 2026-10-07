@@ -1,5 +1,6 @@
 package com.shock.herogrind.world.internal.domain;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -9,4 +10,6 @@ public interface GhostActivityRepository {
   void save(GhostActivity activity);
 
   void deleteByHeroId(UUID heroId);
+
+  List<GhostActivity> findAll();
 }

@@ -1,5 +1,6 @@
 package com.shock.herogrind.monster.internal.application;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -23,5 +24,10 @@ public class MonsterFacadeImpl implements MonsterFacade {
   @Override
   public MonsterInfo getMonsterInfoById(UUID monsterId) {
     return getMonsterUseCase.getMonsterInfoById(monsterId);
+  }
+
+  @Override
+  public List<MonsterInfo> findAll() {
+    return getMonsterUseCase.getAllMonsters();
   }
 }

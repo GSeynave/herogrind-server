@@ -1,5 +1,6 @@
 package com.shock.herogrind.combat.api;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,5 +15,7 @@ public interface CombatFacade {
   EncounterInfo advanceEncounter(UUID encounterId);
 
   void endEncounter(UUID encounterId);
+
+  List<EncounterInfo> findAll();
 
 }

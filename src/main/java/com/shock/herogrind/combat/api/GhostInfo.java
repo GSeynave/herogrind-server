@@ -5,6 +5,9 @@ import java.util.UUID;
 
 import com.shock.herogrind.world.internal.domain.HeroActivityState;
 
+import lombok.Builder;
+
+@Builder
 public record GhostInfo(
     List<UUID> pathToTown,
     UUID currentAreaId,

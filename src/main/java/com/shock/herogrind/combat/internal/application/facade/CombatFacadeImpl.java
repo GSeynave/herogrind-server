@@ -1,6 +1,7 @@
 package com.shock.herogrind.combat.internal.application.facade;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -74,5 +75,15 @@ public class CombatFacadeImpl implements CombatFacade {
   @Override
   public void endEncounter(UUID encounterId) {
     encounterRepository.deleteById(encounterId);
+  }
+
+  @Override
+  public List<EncounterInfo> findAll() {
+    var encounters = encounterRepository.findAll();
+    var encounterInfos = new ArrayList<EncounterInfo>();
+    for (var encounter : encounters) {
+      encounterInfos.add(Encounter.toInfo(encounter, new ArrayList<>()));
+    }
+    return encounterInfos;
   }
 }
