@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shock.herogrind.world.api.web.dto.HeroActivityDto;
+import com.shock.herogrind.world.api.web.dto.WorldEventDto;
 import com.shock.herogrind.world.api.web.dto.WorldStateDto;
 import com.shock.herogrind.world.internal.application.GetHeroActivitiesUseCase;
 import com.shock.herogrind.world.internal.application.GetWorldStateUseCase;
 import com.shock.herogrind.world.internal.application.WorldTickUseCase;
-import com.shock.herogrind.world.internal.domain.WorldEvent;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,14 +35,14 @@ public class WorldController {
   }
 
   @GetMapping("/events")
-  public ResponseEntity<List<WorldEvent>> getWorldTick() {
+  public ResponseEntity<List<WorldEventDto>> getWorldTick() {
     var events = worldTickUseCase.getEvents();
-    return ResponseEntity.ok(events);
+    return ResponseEntity.ok(events.stream().map(WorldEventDto::from).toList());
   }
 
   @GetMapping("/state")
   public ResponseEntity<WorldStateDto> getWorldState() {
     var state = getWorldStateUseCase.execute();
-    return ResponseEntity.ok(state);
+    return ResponseEntity.ok(WorldStateDto.from(state));
   }
 }

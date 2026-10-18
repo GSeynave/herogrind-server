@@ -1,4 +1,4 @@
-package com.shock.herogrind.world.infrastructure.persistence;
+package com.shock.herogrind.world.internal.infrastructure.persistence;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import com.shock.herogrind.world.internal.domain.GhostActivity;
 import com.shock.herogrind.world.internal.domain.GhostActivityRepository;
 
+/** In-memory adapter for the world module's ghost activity repository port. */
 @Repository
 public class InMemoryGhostActivityRepository implements GhostActivityRepository {
 

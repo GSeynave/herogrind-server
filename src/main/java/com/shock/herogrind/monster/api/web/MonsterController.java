@@ -1,4 +1,4 @@
-package com.shock.herogrind.monster.api;
+package com.shock.herogrind.monster.api.web;
 
 import java.util.List;
 
@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shock.herogrind.monster.internal.application.GetMonsterUseCase;
+import com.shock.herogrind.monster.api.web.dto.MonsterDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,8 +19,10 @@ public class MonsterController {
   private final GetMonsterUseCase getMonsterUseCase;
 
   @GetMapping
-  public ResponseEntity<List<MonsterInfo>> getMonsters() {
-    List<MonsterInfo> monsters = getMonsterUseCase.getAllMonsters();
+  public ResponseEntity<List<MonsterDto>> getMonsters() {
+    List<MonsterDto> monsters = getMonsterUseCase.getAllMonsters().stream()
+        .map(MonsterDto::from)
+        .toList();
     return ResponseEntity.ok(monsters);
   }
 }

@@ -1,4 +1,4 @@
-package com.shock.herogrind.area.api;
+package com.shock.herogrind.area.api.web;
 
 import java.util.List;
 import java.util.UUID;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.shock.herogrind.area.api.dto.AreaDto;
+import com.shock.herogrind.area.api.web.dto.AreaDto;
 import com.shock.herogrind.area.internal.application.GetAreaQuery;
 import com.shock.herogrind.area.internal.application.GetAreaUseCase;
 import com.shock.herogrind.area.internal.application.GetAreasUseCase;

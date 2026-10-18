@@ -3,11 +3,6 @@ package com.shock.herogrind.world.internal.application;
 import org.springframework.stereotype.Component;
 
 import com.shock.herogrind.combat.api.CombatFacade;
-import com.shock.herogrind.monster.api.MonsterFacade;
-import com.shock.herogrind.world.api.web.dto.EncounterDto;
-import com.shock.herogrind.world.api.web.dto.GhostDto;
-import com.shock.herogrind.world.api.web.dto.HeroActivityDto;
-import com.shock.herogrind.world.api.web.dto.WorldStateDto;
 import com.shock.herogrind.world.internal.domain.GhostActivityRepository;
 
 @Component
@@ -20,21 +15,17 @@ public class GetWorldStateUseCase {
   public GetWorldStateUseCase(
       GetHeroActivitiesUseCase getHeroActivitiesUseCase,
       CombatFacade combatFacade,
-      GhostActivityRepository ghostActivityRepository,
-      MonsterFacade monsterFacade) {
+      GhostActivityRepository ghostActivityRepository) {
     this.getHeroActivitiesUseCase = getHeroActivitiesUseCase;
     this.combatFacade = combatFacade;
     this.ghostActivityRepository = ghostActivityRepository;
   }
 
-  public WorldStateDto execute() {
+  public WorldStateView execute() {
     var heroActivities = getHeroActivitiesUseCase.execute();
-    var heroes = heroActivities.stream()
-        .map(HeroActivityDto::from)
-        .toList();
     var encounters = combatFacade.findAll();
-    var encounterDtos = encounters.stream()
-        .map(encounter -> new EncounterDto(
+    var encounterViews = encounters.stream()
+        .map(encounter -> new WorldStateView.EncounterView(
             encounter.encounterId(),
             encounter.heroId(),
             encounter.heroHealth(),
@@ -42,8 +33,8 @@ public class GetWorldStateUseCase {
             encounter.enemyHealth()))
         .toList();
     var ghosts = ghostActivityRepository.findAll();
-    var ghostDtos = ghosts.stream()
-        .map(ghost -> new GhostDto(
+    var ghostViews = ghosts.stream()
+        .map(ghost -> new WorldStateView.GhostView(
             ghost.getHeroId(),
             ghost.getCurrentAreaId(),
             ghost.getTravelDestinationId(),
@@ -52,9 +43,9 @@ public class GetWorldStateUseCase {
             ghost.getResurrectionEndAt()))
         .toList();
 
-    return new WorldStateDto(
-        heroes,
-        encounterDtos,
-        ghostDtos);
+    return new WorldStateView(
+        heroActivities,
+        encounterViews,
+        ghostViews);
   }
 }

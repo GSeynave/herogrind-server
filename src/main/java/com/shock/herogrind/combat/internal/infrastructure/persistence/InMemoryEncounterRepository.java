@@ -13,7 +13,7 @@ import com.shock.herogrind.combat.internal.application.EncounterRepository;
 import com.shock.herogrind.combat.internal.domain.Encounter;
 
 @Repository
-public class InMemeryEncounterRepository implements EncounterRepository {
+public class InMemoryEncounterRepository implements EncounterRepository {
 
   private final Map<UUID, Encounter> encounterStorage = new HashMap<>();
 
