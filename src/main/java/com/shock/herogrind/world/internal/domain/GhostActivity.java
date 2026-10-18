@@ -11,6 +11,7 @@ public class GhostActivity implements HeroActivityPayload {
   private List<UUID> pathToTown;
   private UUID currentAreaId;
   private UUID travelDestinationId;
+  private Long startedAt;
   private Long arrivalAt;
   private Long resurrectionEndAt;
   private UUID heroId;

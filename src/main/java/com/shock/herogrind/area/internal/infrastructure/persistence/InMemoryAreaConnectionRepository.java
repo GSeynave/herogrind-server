@@ -4,14 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-
-import jakarta.annotation.PostConstruct;
 
 import org.springframework.stereotype.Repository;
 
-import com.shock.herogrind.area.internal.domain.Area;
+import com.shock.herogrind.area.api.AreaConnectionInfo;
 import com.shock.herogrind.area.internal.domain.AreaConnectionRepository;
 
 @Repository
@@ -25,6 +22,15 @@ public class InMemoryAreaConnectionRepository implements AreaConnectionRepositor
     var connections = areaConnectionsMap.getOrDefault(areaId, new ArrayList<>());
     connections.add(connectedAreaId);
     areaConnectionsMap.put(areaId, connections);
+  }
+
+  @Override
+  public List<AreaConnectionInfo> getAllAreasConnections() {
+    var connections = new ArrayList<AreaConnectionInfo>();
+    areaConnectionsMap.forEach((k, v) -> {
+      connections.add(new AreaConnectionInfo(k, v));
+    });
+    return connections;
   }
 
 }

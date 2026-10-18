@@ -1,6 +1,8 @@
 package com.shock.herogrind.world.infrastructure.persistence;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,4 +31,10 @@ public class InMemoryGhostActivityRepository implements GhostActivityRepository 
   public void deleteByHeroId(UUID heroId) {
     ghostActivityStorage.remove(heroId);
   }
+
+  @Override
+  public List<GhostActivity> findAll() {
+    return new ArrayList<>(ghostActivityStorage.values());
+  }
+
 }

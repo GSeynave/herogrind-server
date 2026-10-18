@@ -5,6 +5,9 @@ import java.util.UUID;
 
 public interface AreaFacade {
 
-    List<AreaInfo> getAreas();
-    AreaInfo getAreaById(UUID uuid);
+  List<AreaInfo> getAreas();
+
+  AreaInfo getAreaById(UUID uuid);
+
+  List<AreaConnectionInfo> getAllConnectionInfos();
 }

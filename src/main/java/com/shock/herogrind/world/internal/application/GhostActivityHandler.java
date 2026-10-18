@@ -2,13 +2,18 @@ package com.shock.herogrind.world.internal.application;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+import com.shock.herogrind.area.api.AreaConnectionInfo;
 import com.shock.herogrind.area.api.AreaFacade;
 import com.shock.herogrind.area.api.AreaInfo;
 import com.shock.herogrind.world.internal.domain.GhostActivity;
@@ -67,22 +72,22 @@ public class GhostActivityHandler implements ActivityHandler {
         .orElseThrow(
             () -> new IllegalStateException("Ghost info not found for hero: " + activity.heroId()));
 
-    List<UUID> pathToTown = new ArrayList<>();
-    var town = getTown();
     var graveyard = getGraveyard();
-    pathToTown.add(graveyard.get().id());
-    pathToTown.add(town.get().id());
 
     var arrivalAt = Instant.now().plus(DEFAULT_TRAVEL_TIME, ChronoUnit.SECONDS).toEpochMilli();
+    var path = getPathToTown(activity);
+    path.removeFirst(); // remove graveyard.
+    var nextDestination = path.removeFirst();
     var nextActivity = new HeroActivity(
         activity.heroId(),
         graveyard.get().id(),
         HeroActivityState.GHOST_TRAVELING,
         Instant.now().toEpochMilli(),
         arrivalAt);
+    ghostInfo.setStartedAt(Instant.now().toEpochMilli());
     ghostInfo.setArrivalAt(arrivalAt);
-    ghostInfo.setTravelDestinationId(town.get().id());
-    ghostInfo.setPathToTown(pathToTown);
+    ghostInfo.setTravelDestinationId(nextDestination);
+    ghostInfo.setPathToTown(path);
     ghostActivityRepository.save(ghostInfo);
 
     var event = new WorldEvent(WorldEventType.HERO_GHOST_TRAVELING,
@@ -117,6 +122,55 @@ public class GhostActivityHandler implements ActivityHandler {
     return town;
   }
 
+  private List<UUID> getPathToTown(HeroActivity activity) {
+    var connections = areaFacade.getAllConnectionInfos();
+    var visited = new HashSet<UUID>(); // list already visited area
+    var previous = new HashMap<UUID, UUID>(); // get the previous area from current one.
+    var queue = new ArrayDeque<UUID>();
+    var startId = activity.areaId();
+    var destinationId = getTown().get().id();
+    visited.add(startId);
+    queue.add(startId);
+
+    while (!queue.isEmpty()) {
+      var currentId = queue.poll();
+
+      if (currentId.equals(destinationId)) {
+        break;
+      }
+
+      var neighbors = connections.stream()
+          .filter(c -> c.areaId().equals(currentId))
+          .findFirst()
+          .map(AreaConnectionInfo::connections)
+          .orElse(List.of());
+
+      for (var neighborId : neighbors) {
+        if (visited.add(neighborId)) {
+          previous.put(neighborId, currentId);
+          queue.add(neighborId);
+        }
+      }
+    }
+
+    if (!visited.contains(destinationId)) {
+      throw new IllegalStateException("No path to town found");
+    }
+
+    var path = new ArrayList<UUID>();
+    var currentId = destinationId;
+    while (currentId != null) {
+      path.add(currentId);
+      if (currentId.equals(startId)) {
+        break;
+      }
+      currentId = previous.get(currentId);
+    }
+
+    Collections.reverse(path);
+    return path;
+  }
+
   ActivityHandlerResult resolveTravel(HeroActivity activity) {
     var ghostInfo = ghostActivityRepository.findByHeroId(activity.heroId())
         .orElseThrow(
@@ -125,19 +179,36 @@ public class GhostActivityHandler implements ActivityHandler {
     if (Instant.now().toEpochMilli() < ghostInfo.getArrivalAt()) {
       return ActivityHandlerResult.empty(); // unchanged
     }
-    // if current area is not town,
-    /*
-     * FIXME : When i add the pathToTown list, we can use it to travel through
-     * multiple areas to reach the town.
-     * if (!areaFacade.getAreaById(ghostInfo.getTravelDestinationId()).isTown()) {
-     * // travel to the next destination from the pathToTown list
-     * // For now it's not possible as i force the next destionation to be town, but
-     * in
-     * // the future we can have multiple areas to travel through
-     * }
-     */
 
-    return endGhostTravel(activity, ghostInfo);
+    ghostInfo.setCurrentAreaId(ghostInfo.getTravelDestinationId());
+
+    var remainingPath = new ArrayList<>(ghostInfo.getPathToTown());
+
+    if (remainingPath.isEmpty()) {
+      return endGhostTravel(activity, ghostInfo);
+    }
+
+    var nextDestination = remainingPath.removeFirst();
+
+    ghostInfo.setTravelDestinationId(nextDestination);
+    ghostInfo.setPathToTown(remainingPath);
+
+    var now = Instant.now().toEpochMilli();
+    var arrivalAt = now + DEFAULT_TRAVEL_TIME * 1000L;
+
+    ghostInfo.setStartedAt(now);
+    ghostInfo.setArrivalAt(arrivalAt);
+
+    ghostActivityRepository.save(ghostInfo);
+
+    var nextActivity = new HeroActivity(
+        activity.heroId(),
+        ghostInfo.getCurrentAreaId(),
+        HeroActivityState.GHOST_TRAVELING,
+        now,
+        arrivalAt);
+
+    return new ActivityHandlerResult(nextActivity, List.of());
   }
 
   private ActivityHandlerResult endGhostTravel(HeroActivity activity, GhostActivity ghostInfo) {
@@ -149,6 +220,7 @@ public class GhostActivityHandler implements ActivityHandler {
     ghostInfo.setPathToTown(new ArrayList<>());
     ghostInfo.setCurrentAreaId(ghostInfo.getTravelDestinationId());
     ghostInfo.setTravelDestinationId(null);
+    ghostInfo.setStartedAt(Instant.now().toEpochMilli());
     ghostInfo.setArrivalAt(null);
     ghostInfo.setResurrectionEndAt(resurrectionEndAt);
     ghostActivityRepository.save(ghostInfo);
