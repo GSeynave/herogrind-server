@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.shock.herogrind.monster.api.MonsterFacade;
 import com.shock.herogrind.monster.api.MonsterInfo;
+import com.shock.herogrind.monster.api.MonsterWorldInfo;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,5 +30,10 @@ public class MonsterFacadeImpl implements MonsterFacade {
   @Override
   public List<MonsterInfo> findAll() {
     return getMonsterUseCase.getAllMonsters();
+  }
+
+  @Override
+  public List<MonsterWorldInfo> findAllForWorld() {
+    return getMonsterUseCase.getAllMonstersForWorld();
   }
 }

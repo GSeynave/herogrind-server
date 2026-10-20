@@ -10,4 +10,6 @@ public interface MonsterFacade {
   MonsterInfo getMonsterInfoById(UUID monsterId);
 
   List<MonsterInfo> findAll();
+
+  List<MonsterWorldInfo> findAllForWorld();
 }

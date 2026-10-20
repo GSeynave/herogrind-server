@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.shock.herogrind.combat.api.CombatFacade;
 import com.shock.herogrind.world.internal.domain.GhostActivityRepository;
+import com.shock.herogrind.world.internal.domain.WorldActorRepository;
 
 @Component
 public class GetWorldStateUseCase {
@@ -11,14 +12,17 @@ public class GetWorldStateUseCase {
   private final GetHeroActivitiesUseCase getHeroActivitiesUseCase;
   private final CombatFacade combatFacade;
   private final GhostActivityRepository ghostActivityRepository;
+  private final WorldActorRepository worldActorRepository;
 
   public GetWorldStateUseCase(
       GetHeroActivitiesUseCase getHeroActivitiesUseCase,
       CombatFacade combatFacade,
-      GhostActivityRepository ghostActivityRepository) {
+      GhostActivityRepository ghostActivityRepository,
+      WorldActorRepository worldActorRepository) {
     this.getHeroActivitiesUseCase = getHeroActivitiesUseCase;
     this.combatFacade = combatFacade;
     this.ghostActivityRepository = ghostActivityRepository;
+    this.worldActorRepository = worldActorRepository;
   }
 
   public WorldStateView execute() {
@@ -42,10 +46,23 @@ public class GetWorldStateUseCase {
             ghost.getArrivalAt(),
             ghost.getResurrectionEndAt()))
         .toList();
+    var actorViews = worldActorRepository.findAll().stream()
+        .map(actor -> new WorldStateView.ActorView(
+            actor.id(),
+            actor.type(),
+            actor.areaId(),
+            actor.position().x(),
+            actor.position().y(),
+            actor.behavior(),
+            actor.targetId(),
+            actor.health(),
+            actor.maxHealth()))
+        .toList();
 
     return new WorldStateView(
         heroActivities,
         encounterViews,
-        ghostViews);
+        ghostViews,
+        actorViews);
   }
 }

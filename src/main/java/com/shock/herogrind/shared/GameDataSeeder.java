@@ -91,11 +91,19 @@ public class GameDataSeeder {
 
     areaConnectionRepository.save(graveyard.getId(), oldRuins.getId());
 
-    var m1 = new Monster(UUID.randomUUID(), "Goblin", 20D, 30D, darkForest.getId());
-    var m2 = new Monster(UUID.randomUUID(), "Wolf", 30D, 2D, abandonedMine.getId());
-    var m3 = new Monster(UUID.randomUUID(), "Skeleton", 40D, 3D, oldRuins.getId());
-    monsterRepository.save(m1);
-    monsterRepository.save(m2);
-    monsterRepository.save(m3);
+    seedMonsters(monsterRepository, "Goblin", 20D, 30D, darkForest.getId());
+    seedMonsters(monsterRepository, "Wolf", 30D, 2D, abandonedMine.getId());
+    seedMonsters(monsterRepository, "Skeleton", 40D, 3D, oldRuins.getId());
+  }
+
+  private void seedMonsters(
+      MonsterRepository monsterRepository,
+      String name,
+      double health,
+      double attackDamage,
+      UUID areaId) {
+    for (var instanceNumber = 0; instanceNumber < 3; instanceNumber++) {
+      monsterRepository.save(new Monster(UUID.randomUUID(), name, health, attackDamage, areaId));
+    }
   }
 }

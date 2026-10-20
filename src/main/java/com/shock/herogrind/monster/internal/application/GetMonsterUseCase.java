@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import com.shock.herogrind.monster.api.MonsterInfo;
+import com.shock.herogrind.monster.api.MonsterWorldInfo;
 import com.shock.herogrind.monster.api.exception.MonsterNotFoundInAreaException;
 import com.shock.herogrind.monster.internal.domain.Monster;
 
@@ -35,6 +36,17 @@ public class GetMonsterUseCase {
   public List<MonsterInfo> getAllMonsters() {
     return monsterRepository.findAll().stream()
         .map(monster -> new MonsterInfo(monster.id(), monster.name(), monster.health(), monster.attackDamage()))
+        .toList();
+  }
+
+  public List<MonsterWorldInfo> getAllMonstersForWorld() {
+    return monsterRepository.findAll().stream()
+        .map(monster -> new MonsterWorldInfo(
+            monster.id(),
+            monster.name(),
+            monster.health(),
+            monster.attackDamage(),
+            monster.areaId()))
         .toList();
   }
 }

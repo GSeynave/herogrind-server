@@ -11,6 +11,9 @@ import com.shock.herogrind.hero.api.HeroFacade;
 import com.shock.herogrind.world.internal.domain.HeroActivityRepository;
 import com.shock.herogrind.world.internal.domain.HeroActivityState;
 import com.shock.herogrind.world.internal.domain.WorldEvent;
+import com.shock.herogrind.world.internal.domain.CombatActionEvent;
+import com.shock.herogrind.world.internal.domain.WorldEventType;
+import com.shock.herogrind.combat.api.CombatActionTypeInfo;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,18 +25,38 @@ public class WorldTickUseCase {
 
   private final HeroFacade heroFacade;
   private final HeroActivityRepository heroActivityRepository;
+  private final SynchronizeWorldActorsUseCase synchronizeWorldActorsUseCase;
+  private final SynchronizeMonsterActorsUseCase synchronizeMonsterActorsUseCase;
+  private final ActorTickUseCase actorTickUseCase;
+  private final HeroActorDeathTransitionUseCase heroActorDeathTransitionUseCase;
   private final List<ActivityHandler> activityHandlers;
 
   private final Queue<WorldEvent> worldEventQueue = new ArrayDeque<>();
 
   public void execute() {
     log.debug("Starting world tick");
+    synchronizeWorldActorsUseCase.synchronizeHeroes();
+    synchronizeMonsterActorsUseCase.synchronizeMonsters();
+    var combatActions = actorTickUseCase.execute();
+    heroActorDeathTransitionUseCase.transitionDefeatedHeroes(combatActions).forEach(worldEventQueue::add);
+    combatActions.forEach(action -> worldEventQueue.add(new WorldEvent(
+        WorldEventType.COMBAT_ACTION,
+        new CombatActionEvent(
+            action.sourceId(),
+            action.targetId(),
+            action.targetHealth(),
+            CombatActionTypeInfo.ATTACK,
+            action.damage()),
+        System.currentTimeMillis())));
     var heroes = heroFacade.getAllHeroes();
     log.debug("Processing {} heroes", heroes.size());
 
     heroes.forEach(h -> {
       log.trace("Processing hero {}", h.getId());
       var currentActivity = heroActivityRepository.getOrIdle(h.getId());
+      if (currentActivity.state() == HeroActivityState.ROAMING) {
+        return;
+      }
 
       var result = activityHandler(currentActivity.state()).handle(currentActivity);
 
